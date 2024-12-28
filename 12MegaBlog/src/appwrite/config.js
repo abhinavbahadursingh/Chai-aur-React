@@ -1,55 +1,55 @@
-import conf from "../conf/conf";
-import {Client ,  ID , Databases , Storage , Query}   from 'appwrite'
-
+import conf from '../conf/conf.js';
+import { Client, ID, Databases, Storage, Query } from "appwrite";
 
 export class Service{
-    client  = new Client();
+    client = new Client();
     databases;
     bucket;
     
     constructor(){
         this.client
-            .setEndpoint(conf.appwriteUrl)
-            .setProject(conf.appwriteProjectId);
-            this.databases = new Databases();
-            this.bucket = new this.Storage();
+        .setEndpoint(conf.appwriteUrl)
+        .setProject(conf.appwriteProjectId);
+        this.databases = new Databases(this.client);
+        this.bucket = new Storage(this.client);
     }
 
-    async createPost({title , slug , content , featuredImage , status , userId}){
+    async createPost({title, slug, content, featuredImage, status, userId}){
         try {
             return await this.databases.createDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
                 slug,
                 {
-                    title, 
+                    title,
                     content,
                     featuredImage,
                     status,
-                    userId,         
+                    userId,
                 }
             )
         } catch (error) {
-            console.log(error);   
+            console.log("Appwrite serive :: createPost :: error", error);
         }
     }
 
-        async updatePost(slug , {title , content , featuredImage , status }){
-            try {
-                return await this.databases.updateDocument(
-                    conf.appwriteDatabaseId,
-                    conf.appwriteCollectionId,
-                    slug,
-                    {
-                        title, 
-                        content,
-                        featuredImage,
-                        status,       
-                    }
-                )      
-            } catch (error) {
-                console.log(error);   
-            }
+    async updatePost(slug, {title, content, featuredImage, status}){
+        try {
+            return await this.databases.updateDocument(
+                conf.appwriteDatabaseId,
+                conf.appwriteCollectionId,
+                slug,
+                {
+                    title,
+                    content,
+                    featuredImage,
+                    status,
+
+                }
+            )
+        } catch (error) {
+            console.log("Appwrite serive :: updatePost :: error", error);
+        }
     }
 
     async deletePost(slug){
@@ -57,11 +57,12 @@ export class Service{
             await this.databases.deleteDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
-                slug,
-            )      
-            return true;
+                slug
+            
+            )
+            return true
         } catch (error) {
-            console.log(error);   
+            console.log("Appwrite serive :: deletePost :: error", error);
             return false
         }
     }
@@ -72,25 +73,30 @@ export class Service{
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
                 slug
+            
             )
         } catch (error) {
-            console.log(error);
+            console.log("Appwrite serive :: getPost :: error", error);
             return false
         }
     }
 
-    async getPosts(query = [ Query.equal("status" , "active")]){ //querry sirf ek variable h
+    async getPosts(queries = [Query.equal("status", "active")]){
         try {
             return await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
-                appwriteCollectionId,
-                 query
+                conf.appwriteCollectionId,
+                queries,
+                
+
             )
         } catch (error) {
-            console.log(error)
-        return false
+            console.log("Appwrite serive :: getPosts :: error", error);
+            return false
         }
     }
+
+    // file upload service
 
     async uploadFile(file){
         try {
@@ -100,28 +106,32 @@ export class Service{
                 file
             )
         } catch (error) {
-            console.log(error);
+            console.log("Appwrite serive :: uploadFile :: error", error);
             return false
         }
     }
 
-    async deleteFile(fileID){
+    async deleteFile(fileId){
         try {
             await this.bucket.deleteFile(
                 conf.appwriteBucketId,
-                fileID
+                fileId
             )
+            return true
         } catch (error) {
-            console.log(error);
+            console.log("Appwrite serive :: deleteFile :: error", error);
             return false
         }
     }
 
-
-    getFilePreview(fileID){
-        conf.appwriteBucketId,
-        fileID
+    getFilePreview(fileId){
+        return this.bucket.getFilePreview(
+            conf.appwriteBucketId,
+            fileId
+        )
     }
 }
-const service = new Service()//new variable se banaya h to constructor lgega 
-export default service//aaise object nikal ke issi liye export kiya taki jb use kre to direct dot krke use kr skte service ko
+
+
+const service = new Service()
+export default service

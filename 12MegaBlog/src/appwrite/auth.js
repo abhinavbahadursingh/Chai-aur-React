@@ -1,66 +1,61 @@
-import conf from "../conf/conf";
-import {Client , Account , ID} from 'appwrite'
+import conf from '../conf/conf.js';
+import { Client, Account, ID } from "appwrite";
+
 
 export class AuthService {
-    client = new Client()
-    account; //account banne me error na aaye issi liye if ye nahi kiya to phir dikkat ho skti h like aage account phle se exist kiya and you did not checked the it will be fucked uppp
+    client = new Client();
+    account;
 
-    constructor(){
+    constructor() {
         this.client
             .setEndpoint(conf.appwriteUrl)
             .setProject(conf.appwriteProjectId);
-        this.account = new this.Account(this.client);
+        this.account = new Account(this.client);
+            
     }
 
-    async createAccount({email ,password , name}){
+    async createAccount({email, password, name}) {
         try {
-            const userAccount = await this.account.create(ID.unique() , email , password , name)
+            const userAccount = await this.account.create(ID.unique(), email, password, name);
             if (userAccount) {
-                //call another meathod
-                 return this.login({email , password})
-            }else{
-                return userAccount; 
+                // call another method
+                return this.login({email, password});
+            } else {
+               return  userAccount;
             }
         } catch (error) {
             throw error;
         }
     }
-    
-    async getCurrentUser(){
+
+    async login({email, password}) {
         try {
-            return await this.account.get()
+            return await this.account.createEmailSession(email, password);
         } catch (error) {
-            throw error
+            throw error;
         }
+    }
+
+    async getCurrentUser() {
+        try {
+            return await this.account.get();
+        } catch (error) {
+            console.log("Appwrite serive :: getCurrentUser :: error", error);
+        }
+
         return null;
     }
 
-    async logout(){
+    async logout() {
+
         try {
-            return await this.deleteSessions()
+            await this.account.deleteSessions();
         } catch (error) {
-            throw error
+            console.log("Appwrite serive :: logout :: error", error);
         }
     }
 }
 
-
 const authService = new AuthService();
 
 export default authService
-
-
-
-
-
-
-// import { Client, Account} from 'appwrite';
-
-// export const client = new Client();
-
-// client
-//     .setEndpoint('https://cloud.appwrite.io/v1')
-//     .setProject('<PROJECT_ID>');
-
-// export const account = new Account(client);
-// export { ID } from 'appwrite';
